@@ -24,196 +24,199 @@ from error import InvalidProjectGroupsError
 
 
 class Command(object):
-  """Base class for any command line action in repo.
-  """
-
-  common = False
-  manifest = None
-  _optparse = None
-
-  def WantPager(self, _opt):
-    return False
-
-  def ReadEnvironmentOptions(self, opts):
-    """ Set options from environment variables. """
-
-    env_options = self._RegisteredEnvironmentOptions()
-
-    for env_key, opt_key in env_options.items():
-      # Get the user-set option value if any
-      opt_value = getattr(opts, opt_key)
-
-      # If the value is set, it means the user has passed it as a command
-      # line option, and we should use that.  Otherwise we can try to set it
-      # with the value from the corresponding environment variable.
-      if opt_value is not None:
-        continue
-
-      env_value = os.environ.get(env_key)
-      if env_value is not None:
-        setattr(opts, opt_key, env_value)
-
-    return opts
-
-  @property
-  def OptionParser(self):
-    if self._optparse is None:
-      try:
-        me = 'repo %s' % self.NAME
-        usage = self.helpUsage.strip().replace('%prog', me)
-      except AttributeError:
-        usage = 'repo %s' % self.NAME
-      self._optparse = optparse.OptionParser(usage=usage)
-      self._Options(self._optparse)
-    return self._optparse
-
-  def _Options(self, p):
-    """Initialize the option parser.
+    """Base class for any command line action in repo.
     """
 
-  def _RegisteredEnvironmentOptions(self):
-    """Get options that can be set from environment variables.
+    common = False
+    manifest = None
+    _optparse = None
 
-    Return a dictionary mapping environment variable name
-    to option key name that it can override.
+    def WantPager(self, _opt):
+        return False
 
-    Example: {'REPO_MY_OPTION': 'my_option'}
+    def ReadEnvironmentOptions(self, opts):
+        """ Set options from environment variables. """
 
-    Will allow the option with key value 'my_option' to be set
-    from the value in the environment variable named 'REPO_MY_OPTION'.
+        env_options = self._RegisteredEnvironmentOptions()
 
-    Note: This does not work properly for options that are explicitly
-    set to None by the user, or options that are defined with a
-    default value other than None.
+        for env_key, opt_key in env_options.items():
+            # Get the user-set option value if any
+            opt_value = getattr(opts, opt_key)
 
-    """
-    return {}
+            # If the value is set, it means the user has passed it as a command
+            # line option, and we should use that.  Otherwise we can try to set it
+            # with the value from the corresponding environment variable.
+            if opt_value is not None:
+                continue
 
-  def Usage(self):
-    """Display usage and terminate.
-    """
-    self.OptionParser.print_usage()
-    sys.exit(1)
+            env_value = os.environ.get(env_key)
+            if env_value is not None:
+                setattr(opts, opt_key, env_value)
 
-  def Execute(self, opt, args):
-    """Perform the action, after option parsing is complete.
-    """
-    raise NotImplementedError
+        return opts
 
-  def _ResetPathToProjectMap(self, projects):
-    self._by_path = dict((p.worktree, p) for p in projects)
+    @property
+    def OptionParser(self):
+        if self._optparse is None:
+            try:
+                me = 'repo %s' % self.NAME
+                usage = self.helpUsage.strip().replace('%prog', me)
+            except AttributeError:
+                usage = 'repo %s' % self.NAME
+            self._optparse = optparse.OptionParser(usage=usage)
+            self._Options(self._optparse)
+        return self._optparse
 
-  def _UpdatePathToProjectMap(self, project):
-    self._by_path[project.worktree] = project
+    def _Options(self, p):
+        """Initialize the option parser.
+        """
 
-  def _GetProjectByPath(self, manifest, path):
-    project = None
-    if os.path.exists(path):
-      oldpath = None
-      while path and \
-            path != oldpath and \
-            path != manifest.topdir:
-        try:
-          project = self._by_path[path]
-          break
-        except KeyError:
-          oldpath = path
-          path = os.path.dirname(path)
-      if not project and path == manifest.topdir:
-        try:
-          project = self._by_path[path]
-        except KeyError:
-          pass
-    else:
-      try:
-        project = self._by_path[path]
-      except KeyError:
-        pass
-    return project
+    def _RegisteredEnvironmentOptions(self):
+        """Get options that can be set from environment variables.
 
-  def GetProjects(self, args, manifest=None, groups='', missing_ok=False,
-                  submodules_ok=False):
-    """A list of projects that match the arguments.
-    """
-    if not manifest:
-      manifest = self.manifest
-    all_projects_list = manifest.projects
-    result = []
+        Return a dictionary mapping environment variable name
+        to option key name that it can override.
 
-    mp = manifest.manifestProject
+        Example: {'REPO_MY_OPTION': 'my_option'}
 
-    if not groups:
-      groups = mp.config.GetString('manifest.groups')
-    if not groups:
-      groups = 'default,platform-' + platform.system().lower()
-    groups = [x for x in re.split(r'[,\s]+', groups) if x]
+        Will allow the option with key value 'my_option' to be set
+        from the value in the environment variable named 'REPO_MY_OPTION'.
 
-    if not args:
-      derived_projects = {}
-      for project in all_projects_list:
-        if submodules_ok or project.sync_s:
-          derived_projects.update((p.name, p)
-                                  for p in project.GetDerivedSubprojects())
-      all_projects_list.extend(derived_projects.values())
-      for project in all_projects_list:
-        if (missing_ok or project.Exists) and project.MatchesGroups(groups):
-          result.append(project)
-    else:
-      self._ResetPathToProjectMap(all_projects_list)
+        Note: This does not work properly for options that are explicitly
+        set to None by the user, or options that are defined with a
+        default value other than None.
 
-      for arg in args:
-        projects = manifest.GetProjectsWithName(arg)
+        """
+        return {}
 
-        if not projects:
-          path = os.path.abspath(arg).replace('\\', '/')
-          project = self._GetProjectByPath(manifest, path)
+    def Usage(self):
+        """Display usage and terminate.
+        """
+        self.OptionParser.print_usage()
+        sys.exit(1)
 
-          # If it's not a derived project, update path->project mapping and
-          # search again, as arg might actually point to a derived subproject.
-          if (project and not project.Derived and (submodules_ok or
-                                                   project.sync_s)):
-            search_again = False
-            for subproject in project.GetDerivedSubprojects():
-              self._UpdatePathToProjectMap(subproject)
-              search_again = True
-            if search_again:
-              project = self._GetProjectByPath(manifest, path) or project
+    def Execute(self, opt, args):
+        """Perform the action, after option parsing is complete.
+        """
+        raise NotImplementedError
 
-          if project:
-            projects = [project]
+    def _ResetPathToProjectMap(self, projects):
+        self._by_path = dict((p.worktree, p) for p in projects)
 
-        if not projects:
-          raise NoSuchProjectError(arg)
+    def _UpdatePathToProjectMap(self, project):
+        self._by_path[project.worktree] = project
 
-        for project in projects:
-          if not missing_ok and not project.Exists:
-            raise NoSuchProjectError(arg)
-          if not project.MatchesGroups(groups):
-            raise InvalidProjectGroupsError(arg)
+    def _GetProjectByPath(self, manifest, path):
+        project = None
+        if os.path.exists(path):
+            oldpath = None
+            while path and \
+                    path != oldpath and \
+                    path != manifest.topdir:
+                try:
+                    project = self._by_path[path]
+                    break
+                except KeyError:
+                    oldpath = path
+                    path = os.path.dirname(path)
+            if not project and path == manifest.topdir:
+                try:
+                    project = self._by_path[path]
+                except KeyError:
+                    pass
+        else:
+            try:
+                project = self._by_path[path]
+            except KeyError:
+                pass
+        return project
 
-        result.extend(projects)
+    def GetProjects(self, args, manifest=None, groups='', missing_ok=False,
+                    submodules_ok=False):
+        """A list of projects that match the arguments.
+        """
+        if not manifest:
+            manifest = self.manifest
+        all_projects_list = manifest.projects
+        result = []
 
-    def _getpath(x):
-      return x.relpath
-    result.sort(key=_getpath)
-    return result
+        mp = manifest.manifestProject
 
-  def FindProjects(self, args, inverse=False):
-    result = []
-    patterns = [re.compile(r'%s' % a, re.IGNORECASE) for a in args]
-    for project in self.GetProjects(''):
-      for pattern in patterns:
-        match = pattern.search(project.name) or pattern.search(project.relpath)
-        if not inverse and match:
-          result.append(project)
-          break
-        if inverse and match:
-          break
-      else:
-        if inverse:
-          result.append(project)
-    result.sort(key=lambda project: project.relpath)
-    return result
+        if not groups:
+            groups = mp.config.GetString('manifest.groups')
+        if not groups:
+            groups = 'default,platform-' + platform.system().lower()
+        groups = [x for x in re.split(r'[,\s]+', groups) if x]
+
+        if not args:
+            derived_projects = {}
+            for project in all_projects_list:
+                if submodules_ok or project.sync_s:
+                    derived_projects.update((p.name, p)
+                                            for p in project.GetDerivedSubprojects())
+            all_projects_list.extend(derived_projects.values())
+            for project in all_projects_list:
+                if (missing_ok or project.Exists) and project.MatchesGroups(groups):
+                    result.append(project)
+        else:
+            self._ResetPathToProjectMap(all_projects_list)
+
+            for arg in args:
+                projects = manifest.GetProjectsWithName(arg)
+
+                if not projects:
+                    path = os.path.abspath(arg).replace('\\', '/')
+                    project = self._GetProjectByPath(manifest, path)
+
+                    # If it's not a derived project, update path->project mapping and
+                    # search again, as arg might actually point to a derived
+                    # subproject.
+                    if (project and not project.Derived and (submodules_ok or
+                                                             project.sync_s)):
+                        search_again = False
+                        for subproject in project.GetDerivedSubprojects():
+                            self._UpdatePathToProjectMap(subproject)
+                            search_again = True
+                        if search_again:
+                            project = self._GetProjectByPath(
+                                manifest, path) or project
+
+                    if project:
+                        projects = [project]
+
+                if not projects:
+                    raise NoSuchProjectError(arg)
+
+                for project in projects:
+                    if not missing_ok and not project.Exists:
+                        raise NoSuchProjectError(arg)
+                    if not project.MatchesGroups(groups):
+                        raise InvalidProjectGroupsError(arg)
+
+                result.extend(projects)
+
+        def _getpath(x):
+            return x.relpath
+        result.sort(key=_getpath)
+        return result
+
+    def FindProjects(self, args, inverse=False):
+        result = []
+        patterns = [re.compile(r'%s' % a, re.IGNORECASE) for a in args]
+        for project in self.GetProjects(''):
+            for pattern in patterns:
+                match = pattern.search(
+                    project.name) or pattern.search(project.relpath)
+                if not inverse and match:
+                    result.append(project)
+                    break
+                if inverse and match:
+                    break
+            else:
+                if inverse:
+                    result.append(project)
+        result.sort(key=lambda project: project.relpath)
+        return result
 
 
 # pylint: disable=W0223
@@ -222,36 +225,38 @@ class Command(object):
 # is always implemented in classes derived from `InteractiveCommand` and
 # `PagedCommand`, this warning can be suppressed.
 class InteractiveCommand(Command):
-  """Command which requires user interaction on the tty and
-     must not run within a pager, even if the user asks to.
-  """
-  def WantPager(self, _opt):
-    return False
+    """Command which requires user interaction on the tty and
+       must not run within a pager, even if the user asks to.
+    """
+
+    def WantPager(self, _opt):
+        return False
 
 
 class PagedCommand(Command):
-  """Command which defaults to output in a pager, as its
-     display tends to be larger than one screen full.
-  """
-  def WantPager(self, _opt):
-    return True
+    """Command which defaults to output in a pager, as its
+       display tends to be larger than one screen full.
+    """
+
+    def WantPager(self, _opt):
+        return True
 
 # pylint: enable=W0223
 
 
 class MirrorSafeCommand(object):
-  """Command permits itself to run within a mirror,
-     and does not require a working directory.
-  """
+    """Command permits itself to run within a mirror,
+       and does not require a working directory.
+    """
 
 
 class GitcAvailableCommand(object):
-  """Command that requires GITC to be available, but does
-     not require the local client to be a GITC client.
-  """
+    """Command that requires GITC to be available, but does
+       not require the local client to be a GITC client.
+    """
 
 
 class GitcClientCommand(object):
-  """Command that requires the local client to be a GITC
-     client.
-  """
+    """Command that requires the local client to be a GITC
+       client.
+    """

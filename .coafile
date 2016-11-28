@@ -1,0 +1,18 @@
+[default]
+bears = InvalidLinkBear, FilenameBear
+files = **.md, **.py, **.yml
+
+# InvalidLinkBear Configuration
+link_ignore_regex = review
+
+[yaml]
+bears = YAMLLintBear, KeywordBear, LineLengthBear
+files = **.yml
+language = yaml
+[python]
+bears = PEP8Bear
+files = **.py
+[markdown]
+bears = MarkdownBear, KeywordBear, LineLengthBear
+files = **.md
+language = md

@@ -25,12 +25,12 @@ import wrapper
 
 
 class GitcInit(init.Init, GitcAvailableCommand):
-  common = True
-  helpSummary = "Initialize a GITC Client."
-  helpUsage = """
+    common = True
+    helpSummary = "Initialize a GITC Client."
+    helpUsage = """
 %prog [options] [client name]
 """
-  helpDescription = """
+    helpDescription = """
 The '%prog' command is ran to initialize a new GITC client for use
 with the GITC file system.
 
@@ -48,35 +48,36 @@ The optional -f argument can be used to specify the manifest file to
 use for this GITC client.
 """
 
-  def _Options(self, p):
-    super(GitcInit, self)._Options(p)
-    g = p.add_option_group('GITC options')
-    g.add_option('-f', '--manifest-file',
-                 dest='manifest_file',
-                 help='Optional manifest file to use for this GITC client.')
-    g.add_option('-c', '--gitc-client',
-                 dest='gitc_client',
-                 help='The name of the gitc_client instance to create or modify.')
+    def _Options(self, p):
+        super(GitcInit, self)._Options(p)
+        g = p.add_option_group('GITC options')
+        g.add_option('-f', '--manifest-file',
+                     dest='manifest_file',
+                     help='Optional manifest file to use for this GITC client.')
+        g.add_option('-c', '--gitc-client',
+                     dest='gitc_client',
+                     help='The name of the gitc_client instance to create or modify.')
 
-  def Execute(self, opt, args):
-    gitc_client = gitc_utils.parse_clientdir(os.getcwd())
-    if not gitc_client or (opt.gitc_client and gitc_client != opt.gitc_client):
-      print('fatal: Please update your repo command. See go/gitc for instructions.', file=sys.stderr)
-      sys.exit(1)
-    self.client_dir = os.path.join(gitc_utils.get_gitc_manifest_dir(),
-                                   gitc_client)
-    super(GitcInit, self).Execute(opt, args)
+    def Execute(self, opt, args):
+        gitc_client = gitc_utils.parse_clientdir(os.getcwd())
+        if not gitc_client or (opt.gitc_client and gitc_client != opt.gitc_client):
+            print(
+                'fatal: Please update your repo command. See go/gitc for instructions.', file=sys.stderr)
+            sys.exit(1)
+        self.client_dir = os.path.join(gitc_utils.get_gitc_manifest_dir(),
+                                       gitc_client)
+        super(GitcInit, self).Execute(opt, args)
 
-    manifest_file = self.manifest.manifestFile
-    if opt.manifest_file:
-      if not os.path.exists(opt.manifest_file):
-        print('fatal: Specified manifest file %s does not exist.' %
-              opt.manifest_file)
-        sys.exit(1)
-      manifest_file = opt.manifest_file
+        manifest_file = self.manifest.manifestFile
+        if opt.manifest_file:
+            if not os.path.exists(opt.manifest_file):
+                print('fatal: Specified manifest file %s does not exist.' %
+                      opt.manifest_file)
+                sys.exit(1)
+            manifest_file = opt.manifest_file
 
-    manifest = GitcManifest(self.repodir, gitc_client)
-    manifest.Override(manifest_file)
-    gitc_utils.generate_gitc_manifest(None, manifest)
-    print('Please run `cd %s` to view your GITC client.' %
-          os.path.join(wrapper.Wrapper().GITC_FS_ROOT_DIR, gitc_client))
+        manifest = GitcManifest(self.repodir, gitc_client)
+        manifest.Override(manifest_file)
+        gitc_utils.generate_gitc_manifest(None, manifest)
+        print('Please run `cd %s` to view your GITC client.' %
+              os.path.join(wrapper.Wrapper().GITC_FS_ROOT_DIR, gitc_client))

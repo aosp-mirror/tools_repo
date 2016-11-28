@@ -1,3 +1,6 @@
 *.pyc
 .repopickle_*
 /repoc
+*.orig
+*.rej
+*.diff

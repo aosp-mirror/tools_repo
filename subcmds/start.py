@@ -24,94 +24,96 @@ import gitc_utils
 from progress import Progress
 from project import SyncBuffer
 
+
 class Start(Command):
-  common = True
-  helpSummary = "Start a new branch for development"
-  helpUsage = """
+    common = True
+    helpSummary = "Start a new branch for development"
+    helpUsage = """
 %prog <newbranchname> [--all | <project>...]
 """
-  helpDescription = """
+    helpDescription = """
 '%prog' begins a new branch of development, starting from the
 revision specified in the manifest.
 """
 
-  def _Options(self, p):
-    p.add_option('--all',
-                 dest='all', action='store_true',
-                 help='begin branch in all projects')
+    def _Options(self, p):
+        p.add_option('--all',
+                     dest='all', action='store_true',
+                     help='begin branch in all projects')
 
-  def Execute(self, opt, args):
-    if not args:
-      self.Usage()
+    def Execute(self, opt, args):
+        if not args:
+            self.Usage()
 
-    nb = args[0]
-    if not git.check_ref_format('heads/%s' % nb):
-      print("error: '%s' is not a valid name" % nb, file=sys.stderr)
-      sys.exit(1)
+        nb = args[0]
+        if not git.check_ref_format('heads/%s' % nb):
+            print("error: '%s' is not a valid name" % nb, file=sys.stderr)
+            sys.exit(1)
 
-    err = []
-    projects = []
-    if not opt.all:
-      projects = args[1:]
-      if len(projects) < 1:
-        projects = ['.',]  # start it in the local project by default
+        err = []
+        projects = []
+        if not opt.all:
+            projects = args[1:]
+            if len(projects) < 1:
+                projects = ['.', ]  # start it in the local project by default
 
-    all_projects = self.GetProjects(projects,
-                                    missing_ok=bool(self.gitc_manifest))
+        all_projects = self.GetProjects(projects,
+                                        missing_ok=bool(self.gitc_manifest))
 
-    # This must happen after we find all_projects, since GetProjects may need
-    # the local directory, which will disappear once we save the GITC manifest.
-    if self.gitc_manifest:
-      gitc_projects = self.GetProjects(projects, manifest=self.gitc_manifest,
-                                       missing_ok=True)
-      for project in gitc_projects:
-        if project.old_revision:
-          project.already_synced = True
-        else:
-          project.already_synced = False
-          project.old_revision = project.revisionExpr
-        project.revisionExpr = None
-      # Save the GITC manifest.
-      gitc_utils.save_manifest(self.gitc_manifest)
+        # This must happen after we find all_projects, since GetProjects may need
+        # the local directory, which will disappear once we save the GITC
+        # manifest.
+        if self.gitc_manifest:
+            gitc_projects = self.GetProjects(projects, manifest=self.gitc_manifest,
+                                             missing_ok=True)
+            for project in gitc_projects:
+                if project.old_revision:
+                    project.already_synced = True
+                else:
+                    project.already_synced = False
+                    project.old_revision = project.revisionExpr
+                project.revisionExpr = None
+            # Save the GITC manifest.
+            gitc_utils.save_manifest(self.gitc_manifest)
 
-      # Make sure we have a valid CWD
-      if not os.path.exists(os.getcwd()):
-        os.chdir(self.manifest.topdir)
+            # Make sure we have a valid CWD
+            if not os.path.exists(os.getcwd()):
+                os.chdir(self.manifest.topdir)
 
-    pm = Progress('Starting %s' % nb, len(all_projects))
-    for project in all_projects:
-      pm.update()
+        pm = Progress('Starting %s' % nb, len(all_projects))
+        for project in all_projects:
+            pm.update()
 
-      if self.gitc_manifest:
-        gitc_project = self.gitc_manifest.paths[project.relpath]
-        # Sync projects that have not been opened.
-        if not gitc_project.already_synced:
-          proj_localdir = os.path.join(self.gitc_manifest.gitc_client_dir,
-                                       project.relpath)
-          project.worktree = proj_localdir
-          if not os.path.exists(proj_localdir):
-            os.makedirs(proj_localdir)
-          project.Sync_NetworkHalf()
-          sync_buf = SyncBuffer(self.manifest.manifestProject.config)
-          project.Sync_LocalHalf(sync_buf)
-          project.revisionId = gitc_project.old_revision
+            if self.gitc_manifest:
+                gitc_project = self.gitc_manifest.paths[project.relpath]
+                # Sync projects that have not been opened.
+                if not gitc_project.already_synced:
+                    proj_localdir = os.path.join(self.gitc_manifest.gitc_client_dir,
+                                                 project.relpath)
+                    project.worktree = proj_localdir
+                    if not os.path.exists(proj_localdir):
+                        os.makedirs(proj_localdir)
+                    project.Sync_NetworkHalf()
+                    sync_buf = SyncBuffer(self.manifest.manifestProject.config)
+                    project.Sync_LocalHalf(sync_buf)
+                    project.revisionId = gitc_project.old_revision
 
-      # If the current revision is a specific SHA1 then we can't push back
-      # to it; so substitute with dest_branch if defined, or with manifest
-      # default revision instead.
-      branch_merge = ''
-      if IsId(project.revisionExpr):
-        if project.dest_branch:
-          branch_merge = project.dest_branch
-        else:
-          branch_merge = self.manifest.default.revisionExpr
+            # If the current revision is a specific SHA1 then we can't push back
+            # to it; so substitute with dest_branch if defined, or with manifest
+            # default revision instead.
+            branch_merge = ''
+            if IsId(project.revisionExpr):
+                if project.dest_branch:
+                    branch_merge = project.dest_branch
+                else:
+                    branch_merge = self.manifest.default.revisionExpr
 
-      if not project.StartBranch(nb, branch_merge=branch_merge):
-        err.append(project)
-    pm.end()
+            if not project.StartBranch(nb, branch_merge=branch_merge):
+                err.append(project)
+        pm.end()
 
-    if err:
-      for p in err:
-        print("error: %s/: cannot start %s" % (p.relpath, nb),
-              file=sys.stderr)
-      sys.exit(1)
+        if err:
+            for p in err:
+                print("error: %s/: cannot start %s" % (p.relpath, nb),
+                      file=sys.stderr)
+            sys.exit(1)

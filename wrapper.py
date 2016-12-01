@@ -23,6 +23,8 @@ def WrapperPath():
   return os.path.join(os.path.dirname(__file__), 'repo')
 
 _wrapper_module = None
+
+
 def Wrapper():
   global _wrapper_module
   if not _wrapper_module:

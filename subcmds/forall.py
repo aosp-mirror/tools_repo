@@ -36,6 +36,7 @@ _CAN_COLOR = [
 
 
 class ForallColoring(Coloring):
+
   def __init__(self, config):
     Coloring.__init__(self, config, 'forall')
     self.project = self.printer('project', attr='bold')
@@ -187,8 +188,8 @@ without iterating through the remaining projects.
     cmd.extend(opt.command[1:])
 
     if  opt.project_header \
-    and not shell \
-    and cmd[0] == 'git':
+            and not shell \
+            and cmd[0] == 'git':
       # If this is a direct git command that can enable colorized
       # output and the user prefers coloring, add --color into the
       # command line because we are going to wrap the command into
@@ -202,6 +203,7 @@ without iterating through the remaining projects.
       # pylint: disable=W0631
       if cn and cn in _CAN_COLOR:
         class ColorCmd(Coloring):
+
           def __init__(self, config, cmd):
             Coloring.__init__(self, config, cmd)
         if ColorCmd(self.manifest.manifestProject.config, cn).is_on:
@@ -246,7 +248,7 @@ without iterating through the remaining projects.
     except Exception as e:
       # Catch any other exceptions raised
       print('Got an error, terminating the pool: %s: %s' %
-              (type(e).__name__, e),
+            (type(e).__name__, e),
             file=sys.stderr)
       pool.terminate()
       rc = rc or getattr(e, 'errno', 1)
@@ -261,7 +263,7 @@ without iterating through the remaining projects.
         project = self._SerializeProject(p)
       except Exception as e:
         print('Project list error on project %s: %s: %s' %
-                (p.name, type(e).__name__, e),
+              (p.name, type(e).__name__, e),
               file=sys.stderr)
         return
       except KeyboardInterrupt:
@@ -270,6 +272,7 @@ without iterating through the remaining projects.
         return
       yield [mirror, opt, cmd, shell, cnt, config, project]
 
+
 class WorkerKeyboardInterrupt(Exception):
   """ Keyboard interrupt exception for worker processes. """
   pass
@@ -277,6 +280,7 @@ class WorkerKeyboardInterrupt(Exception):
 
 def InitWorker():
   signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 
 def DoWorkWrapper(args):
   """ A wrapper around the DoWork() method.
@@ -296,6 +300,7 @@ def DoWorkWrapper(args):
 
 def DoWork(project, mirror, opt, cmd, shell, cnt, config):
   env = os.environ.copy()
+
   def setenv(name, val):
     if val is None:
       val = ''
@@ -320,7 +325,7 @@ def DoWork(project, mirror, opt, cmd, shell, cnt, config):
 
   if not os.path.exists(cwd):
     if (opt.project_header and opt.verbose) \
-    or not opt.project_header:
+            or not opt.project_header:
       print('skipping %s/' % project['relpath'], file=sys.stderr)
     return
 
@@ -344,10 +349,13 @@ def DoWork(project, mirror, opt, cmd, shell, cnt, config):
   if opt.project_header:
     out = ForallColoring(config)
     out.redirect(sys.stdout)
+
     class sfd(object):
+
       def __init__(self, fd, dest):
         self.fd = fd
         self.dest = dest
+
       def fileno(self):
         return self.fd.fileno()
 

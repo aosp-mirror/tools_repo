@@ -16,14 +16,15 @@
 import os
 from trace import Trace
 
-HEAD    = 'HEAD'
+HEAD = 'HEAD'
 R_HEADS = 'refs/heads/'
-R_TAGS  = 'refs/tags/'
-R_PUB   = 'refs/published/'
-R_M     = 'refs/remotes/m/'
+R_TAGS = 'refs/tags/'
+R_PUB = 'refs/published/'
+R_M = 'refs/remotes/m/'
 
 
 class GitRefs(object):
+
   def __init__(self, gitdir):
     self._gitdir = gitdir
     self._phyref = None

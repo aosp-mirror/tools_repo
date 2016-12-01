@@ -20,6 +20,7 @@ from collections import defaultdict
 from git_command import git
 from progress import Progress
 
+
 class Abandon(Command):
   common = True
   helpSummary = "Permanently abandon a development branch"
@@ -31,6 +32,7 @@ deleting it (and all its history) from your local repository.
 
 It is equivalent to "git branch -D <branchname>".
 """
+
   def _Options(self, p):
     p.add_option('--all',
                  dest='all', action='store_true',
@@ -46,7 +48,7 @@ It is equivalent to "git branch -D <branchname>".
         print("error: '%s' is not a valid name" % nb, file=sys.stderr)
         sys.exit(1)
     else:
-      args.insert(0,None)
+      args.insert(0, None)
       nb = "'All local branches'"
 
     err = defaultdict(list)
@@ -78,7 +80,7 @@ It is equivalent to "git branch -D <branchname>".
 
     if err:
       for br in err.keys():
-        err_msg = "error: cannot abandon %s" %br
+        err_msg = "error: cannot abandon %s" % br
         print(err_msg, file=sys.stderr)
         for proj in err[br]:
           print(' '*len(err_msg) + " | %s" % p.relpath, file=sys.stderr)
@@ -95,4 +97,4 @@ It is equivalent to "git branch -D <branchname>".
         else:
           result = "%s" % (
             ('\n'+' '*width + '| ').join(p.relpath for p in success[br]))
-        print("%s%s| %s\n" % (br,' '*(width-len(br)), result),file=sys.stderr)
+        print("%s%s| %s\n" % (br, ' '*(width-len(br)), result), file=sys.stderr)

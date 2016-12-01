@@ -27,6 +27,7 @@ if not is_python3():
   input = raw_input
   # pylint:enable=W0622
 
+
 class GitcDelete(Command, GitcClientCommand):
   common = True
   visible_everywhere = False

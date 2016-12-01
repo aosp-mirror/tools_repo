@@ -23,12 +23,15 @@ try:
 except KeyError:
   _TRACE = False
 
+
 def IsTrace():
   return _TRACE
+
 
 def SetTrace():
   global _TRACE
   _TRACE = True
+
 
 def Trace(fmt, *args):
   if IsTrace():

@@ -18,9 +18,12 @@ from color import Coloring
 from error import NoSuchProjectError
 from git_refs import R_M
 
+
 class _Coloring(Coloring):
+
   def __init__(self, config):
     Coloring.__init__(self, config, "status")
+
 
 class Info(PagedCommand):
   common = True
@@ -41,15 +44,14 @@ class Info(PagedCommand):
                  dest="local", action="store_true",
                  help="Disable all remote operations")
 
-
   def Execute(self, opt, args):
     self.out = _Coloring(self.manifest.globalConfig)
-    self.heading = self.out.printer('heading', attr = 'bold')
-    self.headtext = self.out.printer('headtext', fg = 'yellow')
-    self.redtext = self.out.printer('redtext', fg = 'red')
-    self.sha = self.out.printer("sha", fg = 'yellow')
+    self.heading = self.out.printer('heading', attr='bold')
+    self.headtext = self.out.printer('headtext', fg='yellow')
+    self.redtext = self.out.printer('redtext', fg='red')
+    self.sha = self.out.printer("sha", fg='yellow')
     self.text = self.out.nofmt_printer('text')
-    self.dimtext = self.out.printer('dimtext', attr = 'dim')
+    self.dimtext = self.out.printer('dimtext', attr='dim')
 
     self.opt = opt
 
@@ -60,7 +62,7 @@ class Info(PagedCommand):
 
     self.heading("Manifest branch: ")
     if self.manifest.default.revisionExpr:
-        self.headtext(self.manifest.default.revisionExpr)
+      self.headtext(self.manifest.default.revisionExpr)
     self.out.nl()
     self.heading("Manifest merge branch: ")
     self.headtext(mergeBranch)
@@ -114,11 +116,12 @@ class Info(PagedCommand):
       self.printSeparator()
 
   def findRemoteLocalDiff(self, project):
-    #Fetch all the latest commits
+    # Fetch all the latest commits
     if not self.opt.local:
       project.Sync_NetworkHalf(quiet=True, current_branch_only=True)
 
-    logTarget = R_M + self.manifest.manifestProject.config.GetBranch("default").merge
+    logTarget = R_M + \
+        self.manifest.manifestProject.config.GetBranch("default").merge
 
     bareTmp = project.bare_git._bare
     project.bare_git._bare = False
@@ -196,7 +199,7 @@ class Info(PagedCommand):
 
       for commit in commits:
         split = commit.split()
-        self.text('{0:38}{1} '.format('','-'))
+        self.text('{0:38}{1} '.format('', '-'))
         self.sha(split[0] + " ")
         self.text(" ".join(split[1:]))
         self.out.nl()

@@ -21,6 +21,7 @@ from command import Command, MirrorSafeCommand
 from subcmds.sync import _PostRepoUpgrade
 from subcmds.sync import _PostRepoFetch
 
+
 class Selfupdate(Command, MirrorSafeCommand):
   common = False
   helpSummary = "Update repo to the latest version"
@@ -58,5 +59,5 @@ need to be performed by an end-user.
 
       rp.bare_git.gc('--auto')
       _PostRepoFetch(rp,
-                     no_repo_verify = opt.no_repo_verify,
-                     verbose = True)
+                     no_repo_verify=opt.no_repo_verify,
+                     verbose=True)

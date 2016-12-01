@@ -53,6 +53,7 @@ except ImportError:
 
 try:
   import resource
+
   def _rlimit_nofile():
     return resource.getrlimit(resource.RLIMIT_NOFILE)
 except ImportError:
@@ -79,9 +80,11 @@ from manifest_xml import GitcManifest
 
 _ONE_DAY_S = 24 * 60 * 60
 
+
 class _FetchError(Exception):
   """Internal error thrown in _FetchHelper() when we don't want stack trace."""
   pass
+
 
 class Sync(Command, MirrorSafeCommand):
   jobs = 1
@@ -269,12 +272,12 @@ later is required to fix a server side protocol bug.
           _FetchHelper docstring for details.
     """
     try:
-        for project in projects:
-          success = self._FetchHelper(opt, project, *args, **kwargs)
-          if not success and not opt.force_broken:
-            break
+      for project in projects:
+        success = self._FetchHelper(opt, project, *args, **kwargs)
+        if not success and not opt.force_broken:
+          break
     finally:
-        sem.release()
+      sem.release()
 
   def _FetchHelper(self, opt, project, lock, fetched, pm, err_event):
     """Fetch git objects for a single project.
@@ -336,8 +339,8 @@ later is required to fix a server side protocol bug.
       except _FetchError:
         pass
       except Exception as e:
-        print('error: Cannot fetch %s (%s: %s)' \
-            % (project.name, type(e).__name__, str(e)), file=sys.stderr)
+        print('error: Cannot fetch %s (%s: %s)'
+              % (project.name, type(e).__name__, str(e)), file=sys.stderr)
         err_event.set()
         raise
     finally:
@@ -373,8 +376,8 @@ later is required to fix a server side protocol bug.
                     pm=pm,
                     err_event=err_event)
       if self.jobs > 1:
-        t = _threading.Thread(target = self._FetchProjectList,
-                              kwargs = kwargs)
+        t = _threading.Thread(target=self._FetchProjectList,
+                              kwargs=kwargs)
         # Ensure that Ctrl-C will not freeze the repo process.
         t.daemon = True
         threads.add(t)
@@ -541,16 +544,16 @@ later is required to fix a server side protocol bug.
           gitdir = os.path.join(self.manifest.topdir, path, '.git')
           if os.path.exists(gitdir):
             project = Project(
-                           manifest = self.manifest,
-                           name = path,
-                           remote = RemoteSpec('origin'),
-                           gitdir = gitdir,
-                           objdir = gitdir,
-                           worktree = os.path.join(self.manifest.topdir, path),
-                           relpath = path,
-                           revisionExpr = 'HEAD',
-                           revisionId = None,
-                           groups = None)
+                           manifest=self.manifest,
+                           name=path,
+                           remote=RemoteSpec('origin'),
+                           gitdir=gitdir,
+                           objdir=gitdir,
+                           worktree=os.path.join(self.manifest.topdir, path),
+                           relpath=path,
+                           revisionExpr='HEAD',
+                           revisionId=None,
+                           groups=None)
 
             if project.IsDirty():
               print('error: Cannot remove project "%s": uncommitted changes '
@@ -749,7 +752,8 @@ later is required to fix a server side protocol bug.
 
       if gitc_projects != [] and not opt.local_only:
         print('Updating GITC client: %s' % self.gitc_manifest.gitc_client_name)
-        manifest = GitcManifest(self.repodir, self.gitc_manifest.gitc_client_name)
+        manifest = GitcManifest(
+          self.repodir, self.gitc_manifest.gitc_client_name)
         if manifest_name:
           manifest.Override(manifest_name)
         else:
@@ -815,7 +819,7 @@ later is required to fix a server side protocol bug.
       sys.exit(1)
 
     syncbuf = SyncBuffer(mp.config,
-                         detach_head = opt.detach_head)
+                         detach_head=opt.detach_head)
     pm = Progress('Syncing work tree', len(all_projects))
     for project in all_projects:
       pm.update()
@@ -831,6 +835,7 @@ later is required to fix a server side protocol bug.
     if self.manifest.notice:
       print(self.manifest.notice)
 
+
 def _PostRepoUpgrade(manifest, quiet=False):
   wrapper = Wrapper()
   if wrapper.NeedSetupGnuPG():
@@ -838,6 +843,7 @@ def _PostRepoUpgrade(manifest, quiet=False):
   for project in manifest.projects:
     if project.Exists:
       project.PostRepoUpgrade()
+
 
 def _PostRepoFetch(rp, no_repo_verify=False, verbose=False):
   if rp.HasChanges:
@@ -856,6 +862,7 @@ def _PostRepoFetch(rp, no_repo_verify=False, verbose=False):
     if verbose:
       print('repo version %s is current' % rp.work_git.describe(HEAD),
             file=sys.stderr)
+
 
 def _VerifyTag(project):
   gpg_dir = os.path.expanduser('~/.repoconfig/gnupg')
@@ -887,9 +894,9 @@ def _VerifyTag(project):
 
   cmd = [GIT, 'tag', '-v', cur]
   proc = subprocess.Popen(cmd,
-                          stdout = subprocess.PIPE,
-                          stderr = subprocess.PIPE,
-                          env = env)
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          env=env)
   out = proc.stdout.read()
   proc.stdout.close()
 
@@ -903,6 +910,7 @@ def _VerifyTag(project):
     print(file=sys.stderr)
     return False
   return True
+
 
 class _FetchTimes(object):
   _ALPHA = 0.5
@@ -966,7 +974,10 @@ class _FetchTimes(object):
 # and supporting persistent-http[s]. It cannot change hosts from
 # request to request like the normal transport, the real url
 # is passed during initialization.
+
+
 class PersistentTransport(xmlrpc.client.Transport):
+
   def __init__(self, orig_host):
     self.orig_host = orig_host
 
@@ -1000,7 +1011,7 @@ class PersistentTransport(xmlrpc.client.Transport):
       if proxy:
         proxyhandler = urllib.request.ProxyHandler({
             "http": proxy,
-            "https": proxy })
+            "https": proxy})
 
       opener = urllib.request.build_opener(
           urllib.request.HTTPCookieProcessor(cookiejar),
@@ -1057,4 +1068,3 @@ class PersistentTransport(xmlrpc.client.Transport):
 
   def close(self):
     pass
-

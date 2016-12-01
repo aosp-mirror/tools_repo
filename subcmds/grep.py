@@ -19,10 +19,13 @@ from color import Coloring
 from command import PagedCommand
 from git_command import git_require, GitCommand
 
+
 class GrepColoring(Coloring):
+
   def __init__(self, config):
     Coloring.__init__(self, config, 'grep')
     self.project = self.printer('project', attr='bold')
+
 
 class Grep(PagedCommand):
   common = True
@@ -153,7 +156,6 @@ contain a line that matches both expressions:
                  action='callback', callback=carry,
                  help='Show only file names not containing matching lines')
 
-
   def Execute(self, opt, args):
     out = GrepColoring(self.manifest.manifestProject.config)
 
@@ -191,9 +193,9 @@ contain a line that matches both expressions:
     for project in projects:
       p = GitCommand(project,
                      cmd_argv,
-                     bare = False,
-                     capture_stdout = True,
-                     capture_stderr = True)
+                     bare=False,
+                     capture_stdout=True,
+                     capture_stderr=True)
       if p.Wait() != 0:
         # no results
         #

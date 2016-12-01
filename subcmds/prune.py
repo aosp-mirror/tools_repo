@@ -17,6 +17,7 @@ from __future__ import print_function
 from color import Coloring
 from command import PagedCommand
 
+
 class Prune(PagedCommand):
   common = True
   helpSummary = "Prune (delete) already merged topics"
@@ -33,6 +34,7 @@ class Prune(PagedCommand):
       return
 
     class Report(Coloring):
+
       def __init__(self, config):
         Coloring.__init__(self, config, 'status')
         self.project = self.printer('header', attr='bold')

@@ -34,6 +34,7 @@ else:
 
 UNUSUAL_COMMIT_THRESHOLD = 5
 
+
 def _ConfirmManyUploads(multiple_branches=False):
   if multiple_branches:
     print('ATTENTION: One or more branches has an unusually high number '
@@ -45,16 +46,19 @@ def _ConfirmManyUploads(multiple_branches=False):
   answer = input("If you are sure you intend to do this, type 'yes': ").strip()
   return answer == "yes"
 
+
 def _die(fmt, *args):
   msg = fmt % args
   print('error: %s' % msg, file=sys.stderr)
   sys.exit(1)
+
 
 def _SplitEmails(values):
   result = []
   for value in values:
     result.extend([s.strip() for s in value.split(',')])
   return result
+
 
 class Upload(InteractiveCommand):
   common = True
@@ -198,7 +202,8 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
       commit_list = branch.commits
 
       destination = opt.dest_branch or project.dest_branch or project.revisionExpr
-      print('Upload project %s/ to remote branch %s:' % (project.relpath, destination))
+      print('Upload project %s/ to remote branch %s:' %
+            (project.relpath, destination))
       print('  branch %s (%2d commit%s, %s):' % (
                     name,
                     len(commit_list),
@@ -255,10 +260,10 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
       branches[project.name] = b
     script.append('')
 
-    script = [ x.encode('utf-8')
-             if issubclass(type(x), unicode)
-             else x
-             for x in script ]
+    script = [x.encode('utf-8')
+              if issubclass(type(x), unicode)
+              else x
+              for x in script]
 
     script = Editor.EditString("\n".join(script)).split("\n")
 
@@ -344,7 +349,8 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
           key = 'review.%s.autoupload' % branch.project.remote.review
           answer = branch.project.config.GetBoolean(key)
 
-          # if they want to auto upload, let's not ask because it could be automated
+          # if they want to auto upload, let's not ask because it could be
+          # automated
           if answer is None:
             sys.stdout.write('Uncommitted changes in ' + branch.project.name)
             sys.stdout.write(' (did you forget to amend?):\n')
@@ -364,7 +370,8 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
 
         destination = opt.dest_branch or branch.project.dest_branch
 
-        # Make sure our local branch is not setup to track a different remote branch
+        # Make sure our local branch is not setup to track a different remote
+        # branch
         merge_branch = self._GetMergeBranch(branch.project)
         if destination:
           full_dest = 'refs/heads/%s' % destination
@@ -377,7 +384,8 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
             branch.uploaded = False
             continue
 
-        branch.UploadForReview(people, auto_topic=opt.auto_topic, draft=opt.draft, dest_branch=destination)
+        branch.UploadForReview(
+          people, auto_topic=opt.auto_topic, draft=opt.draft, dest_branch=destination)
         branch.uploaded = True
       except UploadError as e:
         branch.error = e
@@ -395,10 +403,10 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
           else:
             fmt = '\n       (%s)'
           print(('[FAILED] %-15s %-15s' + fmt) % (
-                 branch.project.relpath + '/', \
-                 branch.name, \
+                 branch.project.relpath + '/',
+                 branch.name,
                  str(branch.error)),
-                 file=sys.stderr)
+                file=sys.stderr)
       print()
 
     for branch in todo:
@@ -406,7 +414,7 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
         print('[OK    ] %-15s %s' % (
                branch.project.relpath + '/',
                branch.name),
-               file=sys.stderr)
+              file=sys.stderr)
 
     if have_errors:
       sys.exit(1)
@@ -414,14 +422,14 @@ Gerrit Code Review:  http://code.google.com/p/gerrit/
   def _GetMergeBranch(self, project):
     p = GitCommand(project,
                    ['rev-parse', '--abbrev-ref', 'HEAD'],
-                   capture_stdout = True,
-                   capture_stderr = True)
+                   capture_stdout=True,
+                   capture_stderr=True)
     p.Wait()
     local_branch = p.stdout.strip()
     p = GitCommand(project,
                    ['config', '--get', 'branch.%s.merge' % local_branch],
-                   capture_stdout = True,
-                   capture_stderr = True)
+                   capture_stdout=True,
+                   capture_stderr=True)
     p.Wait()
     merge_branch = p.stdout.strip()
     return merge_branch

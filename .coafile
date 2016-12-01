@@ -1,0 +1,22 @@
+[default]
+bears = InvalidLinkBear, FilenameBear
+files = **.md, **.py, **.yml
+max_line_length = 80
+
+# InvalidLinkBear Configuration
+link_ignore_regex = review
+
+[yaml]
+bears = YAMLLintBear, KeywordBear, LineLengthBear
+files = **.yml
+language = yaml
+
+[python]
+bears = PEP8Bear
+files = **.py
+indent_size = 2
+
+[markdown]
+bears = KeywordBear, LineLengthBear
+files = README.md
+language = md

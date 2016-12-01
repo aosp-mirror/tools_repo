@@ -86,7 +86,9 @@ global_options.add_option('--version',
                           dest='show_version', action='store_true',
                           help='display this version of repo')
 
+
 class _Repo(object):
+
   def __init__(self, repodir):
     self.repodir = repodir
     self.commands = all_commands
@@ -159,7 +161,7 @@ class _Repo(object):
       copts = cmd.ReadEnvironmentOptions(copts)
     except NoManifestException as e:
       print('error: in `%s`: %s' % (' '.join([name] + argv), str(e)),
-        file=sys.stderr)
+            file=sys.stderr)
       print('error: manifest missing or unreadable -- please run init',
             file=sys.stderr)
       return 1
@@ -179,9 +181,9 @@ class _Repo(object):
     try:
       result = cmd.Execute(copts, cargs)
     except (DownloadError, ManifestInvalidRevisionError,
-        NoManifestException) as e:
+            NoManifestException) as e:
       print('error: in `%s`: %s' % (' '.join([name] + argv), str(e)),
-        file=sys.stderr)
+            file=sys.stderr)
       if isinstance(e, NoManifestException):
         print('error: manifest missing or unreadable -- please run init',
               file=sys.stderr)
@@ -194,7 +196,8 @@ class _Repo(object):
       result = 1
     except InvalidProjectGroupsError as e:
       if e.name:
-        print('error: project group must be enabled for project %s' % e.name, file=sys.stderr)
+        print('error: project group must be enabled for project %s' %
+              e.name, file=sys.stderr)
       else:
         print('error: project group must be enabled for the project in the current directory', file=sys.stderr)
       result = 1
@@ -247,10 +250,12 @@ def _CheckWrapperVersion(ver, repo_path):
     cp %s %s
 """ % (exp_str, WrapperPath(), repo_path), file=sys.stderr)
 
+
 def _CheckRepoDir(repo_dir):
   if not repo_dir:
     print('no --repo-dir argument', file=sys.stderr)
     sys.exit(1)
+
 
 def _PruneOptions(argv, opt):
   i = 0
@@ -268,6 +273,7 @@ def _PruneOptions(argv, opt):
     i += 1
 
 _user_agent = None
+
 
 def _UserAgent():
   global _user_agent
@@ -287,8 +293,8 @@ def _UserAgent():
 
     p = GitCommand(
       None, ['describe', 'HEAD'],
-      cwd = _MyRepoPath(),
-      capture_stdout = True)
+      cwd=_MyRepoPath(),
+      capture_stdout=True)
     if p.Wait() == 0:
       repo_version = p.stdout
       if len(repo_version) > 0 and repo_version[-1] == '\n':
@@ -305,7 +311,9 @@ def _UserAgent():
       py_version[0], py_version[1], py_version[2])
   return _user_agent
 
+
 class _UserAgentHandler(urllib.request.BaseHandler):
+
   def http_request(self, req):
     req.add_header('User-Agent', _UserAgent())
     return req
@@ -313,6 +321,7 @@ class _UserAgentHandler(urllib.request.BaseHandler):
   def https_request(self, req):
     req.add_header('User-Agent', _UserAgent())
     return req
+
 
 def _AddPasswordFromUserInput(handler, msg, req):
   # If repo could not find auth info from netrc, try to get it from user input
@@ -327,7 +336,9 @@ def _AddPasswordFromUserInput(handler, msg, req):
       return
     handler.passwd.add_password(None, url, user, password)
 
+
 class _BasicAuthHandler(urllib.request.HTTPBasicAuthHandler):
+
   def http_error_401(self, req, fp, code, msg, headers):
     _AddPasswordFromUserInput(self, msg, req)
     return urllib.request.HTTPBasicAuthHandler.http_error_401(
@@ -336,6 +347,7 @@ class _BasicAuthHandler(urllib.request.HTTPBasicAuthHandler):
   def http_error_auth_reqed(self, authreq, host, req, headers):
     try:
       old_add_header = req.add_header
+
       def _add_header(name, val):
         val = val.replace('\n', '')
         old_add_header(name, val)
@@ -350,7 +362,9 @@ class _BasicAuthHandler(urllib.request.HTTPBasicAuthHandler):
         self.retried = 0
       raise
 
+
 class _DigestAuthHandler(urllib.request.HTTPDigestAuthHandler):
+
   def http_error_401(self, req, fp, code, msg, headers):
     _AddPasswordFromUserInput(self, msg, req)
     return urllib.request.HTTPDigestAuthHandler.http_error_401(
@@ -359,6 +373,7 @@ class _DigestAuthHandler(urllib.request.HTTPDigestAuthHandler):
   def http_error_auth_reqed(self, auth_header, host, req, headers):
     try:
       old_add_header = req.add_header
+
       def _add_header(name, val):
         val = val.replace('\n', '')
         old_add_header(name, val)
@@ -373,13 +388,15 @@ class _DigestAuthHandler(urllib.request.HTTPDigestAuthHandler):
         self.retried = 0
       raise
 
+
 class _KerberosAuthHandler(urllib.request.BaseHandler):
+
   def __init__(self):
     self.retried = 0
     self.context = None
     self.handler_order = urllib.request.BaseHandler.handler_order - 50
 
-  def http_error_401(self, req, fp, code, msg, headers): # pylint:disable=unused-argument
+  def http_error_401(self, req, fp, code, msg, headers):  # pylint:disable=unused-argument
     host = req.get_host()
     retry = self.http_error_auth_reqed('www-authenticate', host, req, headers)
     return retry
@@ -391,7 +408,7 @@ class _KerberosAuthHandler(urllib.request.BaseHandler):
 
       if self.retried > 3:
         raise urllib.request.HTTPError(req.get_full_url(), 401,
-          "Negotiate auth failed", headers, None)
+                                       "Negotiate auth failed", headers, None)
       else:
         self.retried += 1
 
@@ -453,6 +470,7 @@ class _KerberosAuthHandler(urllib.request.BaseHandler):
       kerberos.authGSSClientClean(self.context)
       self.context = None
 
+
 def init_http():
   handlers = [_UserAgentHandler()]
 
@@ -461,7 +479,7 @@ def init_http():
     n = netrc.netrc()
     for host in n.hosts:
       p = n.hosts[host]
-      mgr.add_password(p[1], 'http://%s/'  % host, p[0], p[2])
+      mgr.add_password(p[1], 'http://%s/' % host, p[0], p[2])
       mgr.add_password(p[1], 'https://%s/' % host, p[0], p[2])
   except netrc.NetrcParseError:
     pass
@@ -479,6 +497,7 @@ def init_http():
     handlers.append(urllib.request.HTTPHandler(debuglevel=1))
     handlers.append(urllib.request.HTTPSHandler(debuglevel=1))
   urllib.request.install_opener(urllib.request.build_opener(*handlers))
+
 
 def _Main(argv):
   result = 0

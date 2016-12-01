@@ -52,6 +52,7 @@ are displayed.
       return
 
     class Report(Coloring):
+
       def __init__(self, config):
         Coloring.__init__(self, config, 'status')
         self.project = self.printer('header', attr='bold')

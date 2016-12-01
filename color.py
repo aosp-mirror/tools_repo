@@ -106,6 +106,7 @@ def SetDefaultColoring(state):
 
 
 class Coloring(object):
+
   def __init__(self, config, section_type):
     self._section = 'color.%s' % section_type
     self._config = config

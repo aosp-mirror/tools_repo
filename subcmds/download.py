@@ -22,6 +22,7 @@ from error import GitError
 
 CHANGE_RE = re.compile(r'^([1-9][0-9]*)(?:[/\.-]([1-9][0-9]*))?$')
 
+
 class Download(Command):
   common = True
   helpSummary = "Download and checkout a change"
@@ -82,7 +83,7 @@ makes it available in your project's local working directory.
         continue
 
       if len(dl.commits) > 1:
-        print('[%s] %d/%d depends on %d unmerged changes:' \
+        print('[%s] %d/%d depends on %d unmerged changes:'
               % (project.name, change_id, ps_id, len(dl.commits)),
               file=sys.stderr)
         for c in dl.commits:
@@ -91,7 +92,7 @@ makes it available in your project's local working directory.
         try:
           project._CherryPick(dl.commit)
         except GitError:
-          print('[%s] Could not complete the cherry-pick of %s' \
+          print('[%s] Could not complete the cherry-pick of %s'
                 % (project.name, dl.commit), file=sys.stderr)
           sys.exit(1)
 

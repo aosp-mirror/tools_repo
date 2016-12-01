@@ -19,6 +19,7 @@ import sys
 from command import Command
 from git_command import GitCommand
 
+
 class Rebase(Command):
   common = True
   helpSummary = "Rebase local branches on upstream branch"
@@ -33,8 +34,8 @@ branch but need to incorporate new upstream changes "underneath" them.
 
   def _Options(self, p):
     p.add_option('-i', '--interactive',
-                dest="interactive", action="store_true",
-                help="interactive rebase (single project only)")
+                 dest="interactive", action="store_true",
+                 help="interactive rebase (single project only)")
 
     p.add_option('-f', '--force-rebase',
                  dest='force_rebase', action='store_true',
@@ -69,7 +70,7 @@ branch but need to incorporate new upstream changes "underneath" them.
             file=sys.stderr)
       if len(args) == 1:
         print('note: project %s is mapped to more than one path' % (args[0],),
-            file=sys.stderr)
+              file=sys.stderr)
       return -1
 
     for project in all_projects:

@@ -15,6 +15,7 @@
 
 from subcmds.sync import Sync
 
+
 class Smartsync(Sync):
   common = True
   helpSummary = "Update working tree to the latest known good revision"

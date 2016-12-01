@@ -20,6 +20,7 @@ import sys
 
 active = False
 
+
 def RunPager(globalConfig):
   global active
 
@@ -53,6 +54,7 @@ def RunPager(globalConfig):
     print("fatal: cannot start pager '%s'" % pager, file=sys.stderr)
     sys.exit(255)
 
+
 def _SelectPager(globalConfig):
   try:
     return os.environ['GIT_PAGER']
@@ -69,6 +71,7 @@ def _SelectPager(globalConfig):
     pass
 
   return 'less'
+
 
 def _BecomePager(pager):
   # Delaying execution of the pager until we have output

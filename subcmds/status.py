@@ -27,6 +27,7 @@ import os
 
 from color import Coloring
 
+
 class Status(PagedCommand):
   common = True
   helpSummary = "Show the working tree status"
@@ -123,8 +124,8 @@ the following meanings:
         continue
       if item in proj_dirs_parents:
         self._FindOrphans(glob.glob('%s/.*' % item) +
-            glob.glob('%s/*' % item),
-            proj_dirs, proj_dirs_parents, outstring)
+                          glob.glob('%s/*' % item),
+                          proj_dirs, proj_dirs_parents, outstring)
         continue
       outstring.append(''.join([status_header, item, '/']))
 
@@ -165,10 +166,11 @@ the following meanings:
       proj_dirs.add('.repo')
 
       class StatusColoring(Coloring):
+
         def __init__(self, config):
           Coloring.__init__(self, config, 'status')
-          self.project = self.printer('header', attr = 'bold')
-          self.untracked = self.printer('untracked', fg = 'red')
+          self.project = self.printer('header', attr='bold')
+          self.untracked = self.printer('untracked', fg='red')
 
       orig_path = os.getcwd()
       try:
@@ -176,8 +178,8 @@ the following meanings:
 
         outstring = []
         self._FindOrphans(glob.glob('.*') +
-            glob.glob('*'),
-            proj_dirs, proj_dirs_parents, outstring)
+                          glob.glob('*'),
+                          proj_dirs, proj_dirs_parents, outstring)
 
         if outstring:
           output = StatusColoring(self.manifest.globalConfig)

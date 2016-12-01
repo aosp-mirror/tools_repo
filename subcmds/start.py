@@ -24,6 +24,7 @@ import gitc_utils
 from progress import Progress
 from project import SyncBuffer
 
+
 class Start(Command):
   common = True
   helpSummary = "Start a new branch for development"
@@ -54,7 +55,7 @@ revision specified in the manifest.
     if not opt.all:
       projects = args[1:]
       if len(projects) < 1:
-        projects = ['.',]  # start it in the local project by default
+        projects = ['.', ]  # start it in the local project by default
 
     all_projects = self.GetProjects(projects,
                                     missing_ok=bool(self.gitc_manifest))

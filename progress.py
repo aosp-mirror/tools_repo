@@ -20,7 +20,9 @@ from trace import IsTrace
 
 _NOT_TTY = not os.isatty(2)
 
+
 class Progress(object):
+
   def __init__(self, title, total=0, units=''):
     self._title = title
     self._total = total

@@ -36,6 +36,7 @@ from project import SyncBuffer
 from git_config import GitConfig
 from git_command import git_require, MIN_GIT_VERSION
 
+
 class Init(InteractiveCommand, MirrorSafeCommand):
   common = True
   helpSummary = "Initialize repo in the current directory"
@@ -166,7 +167,8 @@ to update the working directory files.
         if not mirrored_manifest_git.endswith(".git"):
           mirrored_manifest_git += ".git"
         if not os.path.exists(mirrored_manifest_git):
-          mirrored_manifest_git = os.path.join(opt.reference + '/.repo/manifests.git')
+          mirrored_manifest_git = os.path.join(
+            opt.reference + '/.repo/manifests.git')
 
       m._InitGitDir(mirror_git=mirrored_manifest_git)
 
@@ -191,7 +193,7 @@ to update the working directory files.
     platformize = lambda x: 'platform-' + x
     if opt.platform == 'auto':
       if (not opt.mirror and
-          not m.config.GetString('repo.mirror') == 'true'):
+              not m.config.GetString('repo.mirror') == 'true'):
         groups.append(platformize(platform.system().lower()))
     elif opt.platform == 'all':
       groups.extend(map(platformize, all_platforms))
@@ -231,7 +233,7 @@ to update the working directory files.
         sys.exit(1)
 
     if not m.Sync_NetworkHalf(is_new=is_new, quiet=opt.quiet,
-        clone_bundle=not opt.no_clone_bundle):
+                              clone_bundle=not opt.no_clone_bundle):
       r = m.GetRemote(m.remote.name)
       print('fatal: cannot obtain manifest %s' % r.url, file=sys.stderr)
 
@@ -295,7 +297,7 @@ to update the working directory files.
 
     while True:
       print()
-      name  = self._Prompt('Your Name', mp.UserName)
+      name = self._Prompt('Your Name', mp.UserName)
       email = self._Prompt('Your Email', mp.UserEmail)
 
       print()
@@ -322,6 +324,7 @@ to update the working directory files.
       return
 
     class _Test(Coloring):
+
       def __init__(self):
         Coloring.__init__(self, gc, 'test color display')
         self._on = True

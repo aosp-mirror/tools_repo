@@ -36,6 +36,7 @@ _ssh_proxy_path = None
 _ssh_sock_path = None
 _ssh_clients = []
 
+
 def ssh_sock(create=True):
   global _ssh_sock_path
   if _ssh_sock_path is None:
@@ -49,6 +50,7 @@ def ssh_sock(create=True):
       'master-%r@%h:%p')
   return _ssh_sock_path
 
+
 def _ssh_proxy():
   global _ssh_proxy_path
   if _ssh_proxy_path is None:
@@ -57,14 +59,17 @@ def _ssh_proxy():
       'git_ssh')
   return _ssh_proxy_path
 
+
 def _add_ssh_client(p):
   _ssh_clients.append(p)
+
 
 def _remove_ssh_client(p):
   try:
     _ssh_clients.remove(p)
   except ValueError:
     pass
+
 
 def terminate_ssh_clients():
   global _ssh_clients
@@ -78,17 +83,22 @@ def terminate_ssh_clients():
 
 _git_version = None
 
+
 class _sfd(object):
   """select file descriptor class"""
+
   def __init__(self, fd, dest, std_name):
     assert std_name in ('stdout', 'stderr')
     self.fd = fd
     self.dest = dest
     self.std_name = std_name
+
   def fileno(self):
     return self.fd.fileno()
 
+
 class _GitCall(object):
+
   def version(self):
     p = GitCommand(None, ['--version'], capture_stdout=True)
     if p.Wait() == 0:
@@ -109,13 +119,15 @@ class _GitCall(object):
     return _git_version
 
   def __getattr__(self, name):
-    name = name.replace('_','-')
+    name = name.replace('_', '-')
+
     def fun(*cmdv):
       command = [name]
       command.extend(cmdv)
       return GitCommand(None, command).Wait() == 0
     return fun
 git = _GitCall()
+
 
 def git_require(min_version, fail=False):
   git_version = git.version_tuple()
@@ -127,30 +139,33 @@ def git_require(min_version, fail=False):
     sys.exit(1)
   return False
 
+
 def _setenv(env, name, value):
   env[name] = value.encode()
 
+
 class GitCommand(object):
+
   def __init__(self,
                project,
                cmdv,
-               bare = False,
-               provide_stdin = False,
-               capture_stdout = False,
-               capture_stderr = False,
-               disable_editor = False,
-               ssh_proxy = False,
-               cwd = None,
-               gitdir = None):
+               bare=False,
+               provide_stdin=False,
+               capture_stdout=False,
+               capture_stderr=False,
+               disable_editor=False,
+               ssh_proxy=False,
+               cwd=None,
+               gitdir=None):
     env = os.environ.copy()
 
     for key in [REPO_TRACE,
-              GIT_DIR,
-              'GIT_ALTERNATE_OBJECT_DIRECTORIES',
-              'GIT_OBJECT_DIRECTORY',
-              'GIT_WORK_TREE',
-              'GIT_GRAFT_FILE',
-              'GIT_INDEX_FILE']:
+                GIT_DIR,
+                'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+                'GIT_OBJECT_DIRECTORY',
+                'GIT_WORK_TREE',
+                'GIT_GRAFT_FILE',
+                'GIT_INDEX_FILE']:
       if key in env:
         del env[key]
 
@@ -229,11 +244,11 @@ class GitCommand(object):
 
     try:
       p = subprocess.Popen(command,
-                           cwd = cwd,
-                           env = env,
-                           stdin = stdin,
-                           stdout = stdout,
-                           stderr = stderr)
+                           cwd=cwd,
+                           env=env,
+                           stdin=stdin,
+                           stdout=stdout,
+                           stderr=stderr)
     except Exception as e:
       raise GitError('%s: %s' % (command[1], e))
 

@@ -53,6 +53,7 @@ urllib.parse.uses_netloc.extend([
     'sso',
     'rpc'])
 
+
 class _Default(object):
   """Project defaults within the manifest."""
 
@@ -69,7 +70,9 @@ class _Default(object):
   def __ne__(self, other):
     return self.__dict__ != other.__dict__
 
+
 class _XmlRemote(object):
+
   def __init__(self,
                name,
                alias=None,
@@ -120,6 +123,7 @@ class _XmlRemote(object):
                       review=self.reviewUrl,
                       orig_name=self.name)
 
+
 class XmlManifest(object):
   """manages the repo configuration file"""
 
@@ -132,12 +136,13 @@ class XmlManifest(object):
     self.isGitcClient = False
 
     self.repoProject = MetaProject(self, 'repo',
-      gitdir   = os.path.join(repodir, 'repo/.git'),
-      worktree = os.path.join(repodir, 'repo'))
+                                   gitdir=os.path.join(repodir, 'repo/.git'),
+                                   worktree=os.path.join(repodir, 'repo'))
 
     self.manifestProject = MetaProject(self, 'manifests',
-      gitdir   = os.path.join(repodir, 'manifests.git'),
-      worktree = os.path.join(repodir, 'manifests'))
+                                       gitdir=os.path.join(
+                                         repodir, 'manifests.git'),
+                                       worktree=os.path.join(repodir, 'manifests'))
 
     self._Unload()
 
@@ -425,7 +430,8 @@ class XmlManifest(object):
                 file=sys.stderr)
         nodes.append(self._ParseManifestXml(local, self.repodir))
 
-      local_dir = os.path.abspath(os.path.join(self.repodir, LOCAL_MANIFESTS_DIR_NAME))
+      local_dir = os.path.abspath(os.path.join(
+        self.repodir, LOCAL_MANIFESTS_DIR_NAME))
       try:
         for local_file in sorted(os.listdir(local_dir)):
           if local_file.endswith('.xml'):
@@ -465,13 +471,14 @@ class XmlManifest(object):
 
     nodes = []
     for node in manifest.childNodes:  # pylint:disable=W0631
-                                      # We only get here if manifest is initialised
+                                      # We only get here if manifest is
+                                      # initialised
       if node.nodeName == 'include':
         name = self._reqatt(node, 'name')
         fp = os.path.join(include_root, name)
         if not os.path.isfile(fp):
           raise ManifestParseError("include %s doesn't exist or isn't a file"
-              % (name,))
+                                   % (name,))
         try:
           nodes.extend(self._ParseManifestXml(fp, include_root))
         # should isolate this to the exact exception, but that's
@@ -606,7 +613,6 @@ class XmlManifest(object):
         if self._repo_hooks_project and (self._repo_hooks_project.name == name):
           self._repo_hooks_project = None
 
-
   def _AddMetaProjectMirror(self, m):
     name = None
     m_url = m.GetRemote(m.remote.name).url
@@ -633,15 +639,15 @@ class XmlManifest(object):
     if name not in self._projects:
       m.PreSync()
       gitdir = os.path.join(self.topdir, '%s.git' % name)
-      project = Project(manifest = self,
-                        name = name,
-                        remote = remote.ToRemoteSpec(name),
-                        gitdir = gitdir,
-                        objdir = gitdir,
-                        worktree = None,
-                        relpath = name or None,
-                        revisionExpr = m.revisionExpr,
-                        revisionId = None)
+      project = Project(manifest=self,
+                        name=name,
+                        remote=remote.ToRemoteSpec(name),
+                        gitdir=gitdir,
+                        objdir=gitdir,
+                        worktree=None,
+                        relpath=name or None,
+                        revisionExpr=m.revisionExpr,
+                        revisionId=None)
       self._projects[project.name] = [project]
       self._paths[project.relpath] = project
 
@@ -742,7 +748,7 @@ class XmlManifest(object):
   def _UnjoinName(self, parent_name, name):
     return os.path.relpath(name, parent_name)
 
-  def _ParseProject(self, node, parent = None, **extra_proj_attrs):
+  def _ParseProject(self, node, parent=None, **extra_proj_attrs):
     """
     reads a <project> element from the manifest file
     """
@@ -755,21 +761,21 @@ class XmlManifest(object):
       remote = self._default.remote
     if remote is None:
       raise ManifestParseError("no remote for project %s within %s" %
-            (name, self.manifestFile))
+                               (name, self.manifestFile))
 
     revisionExpr = node.getAttribute('revision') or remote.revision
     if not revisionExpr:
       revisionExpr = self._default.revisionExpr
     if not revisionExpr:
       raise ManifestParseError("no revision for project %s within %s" %
-            (name, self.manifestFile))
+                               (name, self.manifestFile))
 
     path = node.getAttribute('path')
     if not path:
       path = name
     if path.startswith('/'):
       raise ManifestParseError("project %s path cannot be absolute in %s" %
-            (name, self.manifestFile))
+                               (name, self.manifestFile))
 
     rebase = node.getAttribute('rebase')
     if not rebase:
@@ -793,13 +799,14 @@ class XmlManifest(object):
     if clone_depth:
       try:
         clone_depth = int(clone_depth)
-        if  clone_depth <= 0:
+        if clone_depth <= 0:
           raise ValueError()
       except ValueError:
         raise ManifestParseError('invalid clone-depth %s in %s' %
                                  (clone_depth, self.manifestFile))
 
-    dest_branch = node.getAttribute('dest-branch') or self._default.destBranchExpr
+    dest_branch = node.getAttribute(
+      'dest-branch') or self._default.destBranchExpr
 
     upstream = node.getAttribute('upstream')
 
@@ -821,23 +828,23 @@ class XmlManifest(object):
       if node.getAttribute('force-path').lower() in ("yes", "true", "1"):
         gitdir = os.path.join(self.topdir, '%s.git' % path)
 
-    project = Project(manifest = self,
-                      name = name,
-                      remote = remote.ToRemoteSpec(name),
-                      gitdir = gitdir,
-                      objdir = objdir,
-                      worktree = worktree,
-                      relpath = relpath,
-                      revisionExpr = revisionExpr,
-                      revisionId = None,
-                      rebase = rebase,
-                      groups = groups,
-                      sync_c = sync_c,
-                      sync_s = sync_s,
-                      clone_depth = clone_depth,
-                      upstream = upstream,
-                      parent = parent,
-                      dest_branch = dest_branch,
+    project = Project(manifest=self,
+                      name=name,
+                      remote=remote.ToRemoteSpec(name),
+                      gitdir=gitdir,
+                      objdir=objdir,
+                      worktree=worktree,
+                      relpath=relpath,
+                      revisionExpr=revisionExpr,
+                      revisionId=None,
+                      rebase=rebase,
+                      groups=groups,
+                      sync_c=sync_c,
+                      sync_s=sync_s,
+                      clone_depth=clone_depth,
+                      upstream=upstream,
+                      parent=parent,
+                      dest_branch=dest_branch,
                       **extra_proj_attrs)
 
     for n in node.childNodes:
@@ -848,7 +855,7 @@ class XmlManifest(object):
       if n.nodeName == 'annotation':
         self._ParseAnnotation(project, n)
       if n.nodeName == 'project':
-        project.subprojects.append(self._ParseProject(n, parent = project))
+        project.subprojects.append(self._ParseProject(n, parent=project))
 
     return project
 
@@ -911,7 +918,7 @@ class XmlManifest(object):
       keep = "true"
     if keep != "true" and keep != "false":
       raise ManifestParseError('optional "keep" attribute must be '
-            '"true" or "false"')
+                               '"true" or "false"')
     project.AddAnnotation(name, value, keep)
 
   def _get_remote(self, node):
@@ -922,7 +929,7 @@ class XmlManifest(object):
     v = self._remotes.get(name)
     if not v:
       raise ManifestParseError("remote %s not defined in %s" %
-            (name, self.manifestFile))
+                               (name, self.manifestFile))
     return v
 
   def _reqatt(self, node, attname):
@@ -932,7 +939,7 @@ class XmlManifest(object):
     v = node.getAttribute(attname)
     if not v:
       raise ManifestParseError("no %s in <%s> within %s" %
-            (attname, node.nodeName, self.manifestFile))
+                               (attname, node.nodeName, self.manifestFile))
     return v
 
   def projectsDiff(self, manifest):
@@ -982,7 +989,7 @@ class GitcManifest(XmlManifest):
                                         gitc_client_name)
     self.manifestFile = os.path.join(self.gitc_client_dir, '.manifest')
 
-  def _ParseProject(self, node, parent = None):
+  def _ParseProject(self, node, parent=None):
     """Override _ParseProject and add support for GITC specific attributes."""
     return super(GitcManifest, self)._ParseProject(
         node, parent=parent, old_revision=node.getAttribute('old-revision'))
@@ -991,4 +998,3 @@ class GitcManifest(XmlManifest):
     """Output GITC Specific Project attributes"""
     if p.old_revision:
       e.setAttribute('old-revision', str(p.old_revision))
-

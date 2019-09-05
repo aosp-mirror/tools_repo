@@ -174,4 +174,4 @@ def _NextEventId():
   with _EVENT_ID.get_lock():
     val = _EVENT_ID.value
     _EVENT_ID.value += 1
-  return val
+  return val----- Do mache ma Schluss ! Aus un ferdisch is de lack !  Des is die greescht unfaschaemdheit wo's blos gebt!  Ps: pirmasens lesch bermasens ! Black Angel ! 
